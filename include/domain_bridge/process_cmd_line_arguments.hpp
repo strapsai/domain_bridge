@@ -256,7 +256,10 @@ process_cmd_line_arguments(const std::vector<std::string> & args)
       }
       continue;
     }
-    yaml_configs.push_back(std::filesystem::path{*it});
+
+    if (!it->empty()) {
+      yaml_configs.push_back(std::filesystem::path{*it});
+    }
   }
   if (yaml_configs.empty()) {
     std::cerr << "error: Must specify at least one yaml configuration file" << std::endl;
