@@ -23,6 +23,7 @@
 
 #include "domain_bridge/domain_bridge_config.hpp"
 #include "domain_bridge/topic_bridge_options.hpp"
+#include "domain_bridge/service_bridge_options.hpp"
 #include "domain_bridge/qos_options.hpp"
 
 #include "rclcpp/qos.hpp"
@@ -262,6 +263,63 @@ update_domain_bridge_config_from_yaml(
       domain_bridge_config.topics.push_back({{topic, type, from_domain_id, to_domain_id}, options});
     }
   }
+
+    if (config["services"]) {
+    if (config["services"].Type() != YAML::NodeType::Map) {
+      throw YamlParsingError(file_path, "expected map value for 'services'");
+    }
+    for (const auto & service_node : config["services"]) {
+      // Parse keys for a topic bridge
+      const std::string topic = service_node.first.as<std::string>();
+
+      auto service_info = service_node.second;
+      if (service_info.Type() != YAML::NodeType::Map) {
+        throw YamlParsingError(file_path, "expected map value for each services");
+      }
+
+      if (!service_info["type"]) {
+        throw YamlParsingError(file_path, "missing 'type' for service '" + service + "'");
+      }
+      const std::string type = service_info["type"].as<std::string>();
+
+      std::size_t from_domain_id = default_from_domain;
+      if (service_info["from_domain"]) {
+        from_domain_id = service_info["from_domain"].as<std::size_t>();
+      } else {
+        if (!is_default_from_domain) {
+          throw YamlParsingError(file_path, "missing 'from_domain' for topic '" + topic + "'");
+        }
+      }
+
+      std::size_t to_domain_id = default_to_domain;
+      if (service_info["to_domain"]) {
+        to_domain_id = topic_info["to_domain"].as<std::size_t>();
+      } else {
+        if (!is_default_to_domain) {
+          throw YamlParsingError(file_path, "missing 'to_domain' for topic '" + topic + "'");
+        }
+      }
+
+      // Parse service bridge options
+      ServiceBridgeOptions options;
+      if (service_info["remap"]) {
+        options.remap_name(service_info["remap"].as<std::string>());
+      }
+      options.qos_options(parse_qos_options(topic_info, file_path));
+
+      // if (service_info["bidirectional"]) {
+      //   options.bidirectional(service_info["bidirectional"].as<bool>());
+      // }
+
+      // if (service_info["reversed"]) {
+      //   options.reversed(service_info["reversed"].as<bool>());
+      // }
+
+      // Add topic bridge to config
+      domain_bridge_config.topics.push_back({{topic, type, from_domain_id, to_domain_id}, options});
+    }
+  }
+
 }
 
 }  // namespace domain_bridge

@@ -21,6 +21,9 @@
 #include "domain_bridge/domain_bridge_options.hpp"
 #include "domain_bridge/topic_bridge.hpp"
 #include "domain_bridge/topic_bridge_options.hpp"
+#include "domain_bridge/service_bridge_impl.inc"
+#include "domain_bridge/service_bridge_options.hpp"
+
 
 namespace domain_bridge
 {
@@ -32,7 +35,10 @@ struct DomainBridgeConfig
   DomainBridgeOptions options;
 
   /// Topic bridges with options
-  std::vector<std::pair<TopicBridge, TopicBridgeOptions>> topics;
+  std::vector<std::pair< , TopicBridgeOptions>> topics;
+
+  /// Service bridges with options
+  std::vector<std::pair<ServiceBridge, ServiceBridgeOptions>> services;
 };
 
 }  // namespace domain_bridge
